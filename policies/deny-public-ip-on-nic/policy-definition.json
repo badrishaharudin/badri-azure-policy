@@ -1,0 +1,50 @@
+{
+  "properties": {
+    "displayName": "Deny network interfaces with public IP configurations",
+    "description": "Prevents creation or update of network interfaces that include an attached public IP address.",
+    "policyType": "Custom",
+    "mode": "All",
+    "metadata": {
+      "category": "Network",
+      "version": "1.0.0"
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable policy enforcement."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/networkInterfaces"
+          },
+          {
+            "count": {
+              "field": "Microsoft.Network/networkInterfaces/ipConfigurations[*]",
+              "where": {
+                "field": "Microsoft.Network/networkInterfaces/ipConfigurations[*].publicIPAddress.id",
+                "exists": true
+              }
+            },
+            "greater": 0
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}
